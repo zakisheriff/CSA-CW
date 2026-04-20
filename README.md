@@ -8,13 +8,18 @@ A robust RESTful web service built with JAX-RS (Jersey) and Grizzly for managing
 - Java 8 or higher
 - Apache Maven
 
-### Build & Run
-1. Clone the repository and navigate to the project root.
-2. Build the project:
+### Run with NetBeans (Recommended)
+1.  Open NetBeans IDE.
+2.  Go to **File > Open Project** and select the `SmartCampusAPI` folder.
+3.  Wait for NetBeans to scan the Maven dependencies.
+4.  Right-click the project in the **Projects** tab and select **Run**.
+
+### Run with Terminal (Requires Maven)
+1. Build the project:
    ```bash
    mvn clean install
    ```
-3. Run the server:
+2. Run the server:
    ```bash
    mvn exec:java
    ```
