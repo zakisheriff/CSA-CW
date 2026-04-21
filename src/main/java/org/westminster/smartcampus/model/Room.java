@@ -1,7 +1,9 @@
 package org.westminster.smartcampus.model;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Represents a physical Room on campus.
@@ -10,8 +12,8 @@ public class Room {
     private String id;
     private String name;
     private int capacity;
-    private List<String> sensorIds = new ArrayList<>();
-    private Map<String, String> links = new java.util.LinkedHashMap<>();
+    private List<String> sensorIds = java.util.Collections.synchronizedList(new ArrayList<>());
+    private Map<String, String> links = new LinkedHashMap<>();
 
     public Room() {}
 

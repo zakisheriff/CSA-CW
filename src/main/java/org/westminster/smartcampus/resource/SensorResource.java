@@ -19,11 +19,22 @@ public class SensorResource {
     private final InventoryService inventory = InventoryService.getInstance();
 
     @GET
-    public List<Sensor> getSensors(@QueryParam("type") String type) {
-        if (type != null && !type.isEmpty()) {
-            return inventory.getSensorsByType(type);
+    public List<Sensor> getSensors(@QueryParam("type") String type, @Context UriInfo uriInfo) {
+        List<Sensor> sensors = (type != null && !type.isEmpty()) 
+                ? inventory.getSensorsByType(type) 
+                : inventory.getAllSensors();
+        
+        for (Sensor sensor : sensors) {
+            // Clear existing links to prevent side-effect accumulation in singleton state
+            sensor.getLinks().clear();
+            String sensorUri = uriInfo.getBaseUriBuilder()
+                    .path(SensorResource.class)
+                    .path(sensor.getId())
+                    .build().toString();
+            sensor.getLinks().put("self", sensorUri);
+            sensor.getLinks().put("readings", sensorUri + "/readings");
         }
-        return inventory.getAllSensors();
+        return sensors;
     }
 
     @POST
@@ -49,6 +60,7 @@ public class SensorResource {
         }
 
         // HATEOAS: Populate dynamic links
+        sensor.getLinks().clear();
         sensor.getLinks().put("self", uriInfo.getAbsolutePath().toString());
         sensor.getLinks().put("readings", uriInfo.getAbsolutePathBuilder().path("readings").build().toString());
 

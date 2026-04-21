@@ -34,11 +34,11 @@ public class InventoryService {
     // --- Room Operations ---
 
     public void addRoom(Room room) {
-        rooms.put(room.getId(), room);
+        rooms.put(room.getId().toUpperCase(), room);
     }
 
     public Room getRoom(String id) {
-        return rooms.get(id);
+        return id == null ? null : rooms.get(id.toUpperCase());
     }
 
     public List<Room> getAllRooms() {
@@ -46,9 +46,11 @@ public class InventoryService {
     }
 
     public boolean deleteRoom(String id) {
-        Room room = rooms.get(id);
+        if (id == null) return false;
+        String normalizedId = id.toUpperCase();
+        Room room = rooms.get(normalizedId);
         if (room != null && room.getSensorIds().isEmpty()) {
-            rooms.remove(id);
+            rooms.remove(normalizedId);
             return true;
         }
         return false; // Cannot delete if room has sensors or doesn't exist
@@ -57,11 +59,15 @@ public class InventoryService {
     // --- Sensor Operations ---
 
     public void addSensor(Sensor sensor) {
-        sensors.put(sensor.getId(), sensor);
-        // Link to room
-        Room room = rooms.get(sensor.getRoomId());
+        sensors.put(sensor.getId().toUpperCase(), sensor);
+        // Link to room idempotently
+        Room room = rooms.get(sensor.getRoomId().toUpperCase());
         if (room != null) {
-            room.getSensorIds().add(sensor.getId());
+            synchronized (room.getSensorIds()) {
+                if (!room.getSensorIds().contains(sensor.getId().toUpperCase())) {
+                    room.getSensorIds().add(sensor.getId().toUpperCase());
+                }
+            }
         }
     }
 

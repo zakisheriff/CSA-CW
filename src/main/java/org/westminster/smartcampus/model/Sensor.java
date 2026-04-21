@@ -1,5 +1,8 @@
 package org.westminster.smartcampus.model;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 /**
  * Represents a Sensor deployed in a Room.
  */
@@ -9,7 +12,7 @@ public class Sensor {
     private String status;
     private double currentValue;
     private String roomId;
-    private java.util.Map<String, String> links = new java.util.LinkedHashMap<>();
+    private Map<String, String> links = new LinkedHashMap<>();
 
     public Sensor() {}
 
