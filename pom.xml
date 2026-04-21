@@ -83,6 +83,29 @@
                     <failOnMissingWebXml>false</failOnMissingWebXml>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <configuration>
+                            <target>
+                                <echo message=""/>
+                                <echo message="**************************************************"/>
+                                <echo message="SMART CAMPUS API READY TO TEST"/>
+                                <echo message="URL: http://localhost:8080/SmartCampusAPI/api/v1"/>
+                                <echo message="**************************************************"/>
+                                <echo message=""/>
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 </project>

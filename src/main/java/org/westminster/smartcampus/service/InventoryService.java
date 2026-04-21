@@ -20,8 +20,7 @@ public class InventoryService {
     private final Map<String, List<SensorReading>> readings = new ConcurrentHashMap<>();
 
     private InventoryService() {
-        // Initialize with sample data for demonstration
-        initializeSampleData();
+        // State is managed in-memory but starts empty as per coursework requirements.
     }
 
     public static synchronized InventoryService getInstance() {
@@ -103,20 +102,5 @@ public class InventoryService {
 
     public List<SensorReading> getReadingsForSensor(String sensorId) {
         return readings.getOrDefault(sensorId, Collections.emptyList());
-    }
-
-    // --- Helpers ---
-
-    private void initializeSampleData() {
-        // Sample Room
-        Room lib = new Room("LIB-301", "Library Quiet Study", 50);
-        addRoom(lib);
-
-        // Sample Sensor
-        Sensor temp = new Sensor("TEMP-001", "Temperature", "ACTIVE", "LIB-301");
-        addSensor(temp);
-
-        // Sample Reading
-        addReading("TEMP-001", new SensorReading(22.5));
     }
 }
