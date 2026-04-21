@@ -5,8 +5,6 @@ import javax.ws.rs.core.Application;
 
 /**
  * Standard JAX-RS Application configuration.
- * Extends the standard javax.ws.rs.core.Application as required by the coursework spec.
- * This ensures the code is server-neutral and follows standard JEE patterns.
  */
 @ApplicationPath("/api/v1")
 public class AppConfig extends Application {
