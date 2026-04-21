@@ -38,7 +38,7 @@ public class SensorResource {
     }
 
     @POST
-    public Response createSensor(Sensor sensor) {
+    public Response createSensor(Sensor sensor, @Context UriInfo uriInfo) {
         // Professional validation layer for POJO integrity
         org.westminster.smartcampus.service.ValidationService.validateSensor(sensor);
 
@@ -48,7 +48,14 @@ public class SensorResource {
         }
         
         inventory.addSensor(sensor);
-        return Response.status(Response.Status.CREATED).entity(sensor).build();
+        
+        // HATEOAS: Populate dynamic links
+        String sensorUri = uriInfo.getAbsolutePathBuilder().path(sensor.getId()).build().toString();
+        sensor.getLinks().clear();
+        sensor.getLinks().put("self", sensorUri);
+        sensor.getLinks().put("readings", sensorUri + "/readings");
+
+        return Response.created(java.net.URI.create(sensorUri)).entity(sensor).build();
     }
 
     @GET
