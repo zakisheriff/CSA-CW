@@ -87,8 +87,6 @@ curl -X GET http://localhost:8080/api/v1/sensors/CO2-001/readings
 
 ## 📝 Conceptual Report (Reflection Answers)
 
-## 📝 Conceptual Report (Reflection Answers)
-
 ### Part 1: Service Architecture & Setup
 **Q: Explain the default lifecycle of a JAX-RS Resource class.**
 By default, JAX-RS resources (like `SensorRoom` and `SensorResource`) follow a **Request-Scoped (Stateless)** lifecycle. For every incoming HTTP request, the Jersey runtime instantiates a fresh object of the resource class, invokes the matching method, and immediately flags the object for garbage collection after the response is dispatched.
@@ -164,8 +162,6 @@ Unlike simple student projects, this API is built to handle the **Parallel Throu
 - **Atomic Operations:** Internal list updates (e.g., linking a sensor to a room) use `synchronized` wrappers on the specific collections, minimizing locking overhead while ensuring no data loss during simultaneous registrations.
 
 ---
-
-## 🏛️ Design Patterns & Architectural Decisions
 
 ## 🏛️ Design Patterns & Architectural Decisions
 
