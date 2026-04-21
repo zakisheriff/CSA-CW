@@ -29,7 +29,7 @@ public class DiscoveryResource {
         // HATEOAS: Dynamic Resource links using UriInfo
         Map<String, String> links = new LinkedHashMap<>();
         links.put("self", uriInfo.getAbsolutePath().toString());
-        links.put("rooms", uriInfo.getBaseUriBuilder().path(RoomResource.class).build().toString());
+        links.put("rooms", uriInfo.getBaseUriBuilder().path(SensorRoom.class).build().toString());
         links.put("sensors", uriInfo.getBaseUriBuilder().path(SensorResource.class).build().toString());
         
         discovery.put("_links", links);

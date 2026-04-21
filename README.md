@@ -94,6 +94,11 @@ Yes. An operation is idempotent if multiple identical requests have the same eff
 *   **Justification:** While the *response code* changes, the *state of the server* (the room being absent) is identical after both calls. Therefore, DELETE is idempotent.
 
 ### Part 3: Sensor Operations & Linking
+**Q: What are the technical consequences if a client sends data with a format that mismatches the `@Consumes` annotation (e.g., XML instead of JSON)?**
+JAX-RS will immediately reject the request with an **HTTP 415 Unsupported Media Type** status code. 
+*   **Mechanism:** The runtime uses "Content Negotiation" to match the client's `Content-Type` header against the resource's `@Consumes` metadata. 
+*   **Impact:** This acts as a primary security and integrity barrier, preventing the application from attempting to parse malformed or unexpected data structures which could lead to deserialization vulnerabilities or server-side crashes.
+
 **Q: Contrast Query Parameters vs. URL Paths for filtering.**
 *   **Path Parameters (`/sensors/type/CO2`):** Implies the filter is a resource hierarchy. This is less flexible because it suggests a static structure.
 *   **Query Parameters (`/sensors?type=CO2`):** Correctly models the request as a query over a collection. 

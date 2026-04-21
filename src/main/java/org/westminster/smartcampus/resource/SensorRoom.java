@@ -10,12 +10,12 @@ import java.net.URI;
 import java.util.List;
 
 /**
- * Resource for managing /rooms path.
+ * Resource for managing /rooms path (SensorRoom).
  */
 @Path("/rooms")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-public class RoomResource {
+public class SensorRoom {
 
     private final InventoryService inventory = InventoryService.getInstance();
 
