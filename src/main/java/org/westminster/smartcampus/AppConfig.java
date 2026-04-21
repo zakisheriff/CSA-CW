@@ -1,20 +1,20 @@
 package org.westminster.smartcampus;
 
-import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.jackson.JacksonFeature;
 import javax.ws.rs.ApplicationPath;
+import javax.ws.rs.core.Application;
 
+/**
+ * Standard JAX-RS Application configuration.
+ * Extends the standard javax.ws.rs.core.Application as required by the coursework spec.
+ * This ensures the code is server-neutral and follows standard JEE patterns.
+ */
 @ApplicationPath("/api/v1")
-public class AppConfig extends ResourceConfig {
+public class AppConfig extends Application {
+    // Note: Package scanning is configured in web.xml to maintain 
+    // compatibility with Tomcat/GlassFish deployment patterns.
     public AppConfig() {
-        // Register resources and features
-        packages("org.westminster.smartcampus.resource",
-                "org.westminster.smartcampus.exception",
-                "org.westminster.smartcampus.filter");
-
-        // Register Jackson for JSON support
-        register(JacksonFeature.class);
-
-        System.out.println("Smart Campus API Configuration Initialized at /api/v1");
+        System.out.println("--------------------------------------------------");
+        System.out.println("Smart Campus API Configuration Loaded via JAX-RS");
+        System.out.println("--------------------------------------------------");
     }
 }

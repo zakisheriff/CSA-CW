@@ -6,12 +6,34 @@
     
     <display-name>Smart Campus API</display-name>
 
-    <!-- 
-        Note: We are letting the @ApplicationPath("/api/v1") in AppConfig.java 
-        handle the servlet mapping to satisfy the Coursework Task 1.1 requirements.
+    <servlet>
+        <servlet-name>javax.ws.rs.core.Application</servlet-name>
+        <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
         
-        The presence of this web.xml ensures compatibility with GlassFish/Tomcat 
-        as per the tutorial patterns.
-    -->
+        <!-- Register the Application Config Class -->
+        <init-param>
+            <param-name>javax.ws.rs.Application</param-name>
+            <param-value>org.westminster.smartcampus.AppConfig</param-value>
+        </init-param>
+        
+        <!-- Tell Jersey which packages to scan for Resources, Mappers, and Filters -->
+        <init-param>
+            <param-name>jersey.config.server.provider.packages</param-name>
+            <param-value>org.westminster.smartcampus</param-value>
+        </init-param>
+        
+        <!-- Enable Jackson for JSON support -->
+        <init-param>
+            <param-name>jersey.config.server.provider.classnames</param-name>
+            <param-value>org.glassfish.jersey.jackson.JacksonFeature</param-value>
+        </init-param>
+        
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>javax.ws.rs.core.Application</servlet-name>
+        <url-pattern>/api/v1/*</url-pattern>
+    </servlet-mapping>
 
 </web-app>
