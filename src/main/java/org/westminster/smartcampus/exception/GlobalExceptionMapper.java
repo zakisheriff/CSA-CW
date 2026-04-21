@@ -1,5 +1,6 @@
 package org.westminster.smartcampus.exception;
 
+import org.westminster.smartcampus.model.ErrorMessage;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
@@ -19,10 +20,10 @@ public class GlobalExceptionMapper implements ExceptionMapper<Throwable> {
         // Log the actual error internally for observability
         LOGGER.log(Level.SEVERE, "Unexpected server error", throwable);
 
-        ErrorResponse error = new ErrorResponse(
+        ErrorMessage error = new ErrorMessage(
+                "An unexpected internal server error occurred. Please contact the administrator.",
                 500,
-                "Internal Server Error",
-                "An unexpected error occurred. Please contact the administrator."
+                "https://smartcampus.westminster.ac.uk/api/docs/errors/500"
         );
 
         return Response.status(Response.Status.INTERNAL_SERVER_ERROR)

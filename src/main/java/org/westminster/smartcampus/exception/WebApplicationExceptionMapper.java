@@ -1,5 +1,6 @@
 package org.westminster.smartcampus.exception;
 
+import org.westminster.smartcampus.model.ErrorMessage;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -8,7 +9,7 @@ import javax.ws.rs.ext.Provider;
 
 /**
  * Mapper for standard JAX-RS WebApplicationExceptions.
- * Ensures that even framework-level errors (like 404 or 405) are returned as JSON ErrorResponse objects.
+ * Ensures that even framework-level errors (like 404 or 405) are returned as JSON ErrorMessage objects.
  */
 @Provider
 public class WebApplicationExceptionMapper implements ExceptionMapper<WebApplicationException> {
@@ -18,10 +19,10 @@ public class WebApplicationExceptionMapper implements ExceptionMapper<WebApplica
         Response response = exception.getResponse();
         int status = response.getStatus();
         
-        ErrorResponse error = new ErrorResponse(
+        ErrorMessage error = new ErrorMessage(
+            exception.getMessage(),
             status,
-            response.getStatusInfo().getReasonPhrase(),
-            exception.getMessage()
+            "https://smartcampus.westminster.ac.uk/api/docs/errors/" + status
         );
 
         return Response.status(status)

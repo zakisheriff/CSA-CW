@@ -1,5 +1,6 @@
 package org.westminster.smartcampus.exception;
 
+import org.westminster.smartcampus.model.ErrorMessage;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
@@ -14,10 +15,10 @@ public class LinkedResourceNotFoundMapper implements ExceptionMapper<LinkedResou
     @Override
     public Response toResponse(LinkedResourceNotFoundException exception) {
         // HTTP 422 Unprocessable Entity is semantically accurate for valid JSON with invalid references
-        ErrorResponse error = new ErrorResponse(
+        ErrorMessage error = new ErrorMessage(
+            exception.getMessage(),
             422,
-            "Unprocessable Entity",
-            exception.getMessage()
+            "https://smartcampus.westminster.ac.uk/api/docs/errors/422"
         );
 
         return Response.status(422)

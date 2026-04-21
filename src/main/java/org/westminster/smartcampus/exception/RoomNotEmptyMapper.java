@@ -1,5 +1,6 @@
 package org.westminster.smartcampus.exception;
 
+import org.westminster.smartcampus.model.ErrorMessage;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
@@ -13,10 +14,10 @@ public class RoomNotEmptyMapper implements ExceptionMapper<RoomNotEmptyException
 
     @Override
     public Response toResponse(RoomNotEmptyException exception) {
-        ErrorResponse error = new ErrorResponse(
+        ErrorMessage error = new ErrorMessage(
+            exception.getMessage(),
             Response.Status.CONFLICT.getStatusCode(),
-            "Conflict",
-            exception.getMessage()
+            "https://smartcampus.westminster.ac.uk/api/docs/errors/409"
         );
 
         return Response.status(Response.Status.CONFLICT)

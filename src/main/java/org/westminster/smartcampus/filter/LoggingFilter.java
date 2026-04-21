@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 
 /**
  * Filter for logging HTTP requests and responses.
+ * Aligned with University tutorial patterns (Week 9).
  */
 @Provider
 public class LoggingFilter implements ContainerRequestFilter, ContainerResponseFilter {
@@ -17,14 +18,15 @@ public class LoggingFilter implements ContainerRequestFilter, ContainerResponseF
 
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
-        String method = requestContext.getMethod();
-        String uri = requestContext.getUriInfo().getAbsolutePath().toString();
-        LOGGER.info("---> Request: " + method + " " + uri);
+        LOGGER.info("--- Incoming Request ---");
+        LOGGER.info("Method: " + requestContext.getMethod());
+        LOGGER.info("URI: " + requestContext.getUriInfo().getAbsolutePath());
     }
 
     @Override
-    public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
-        int status = responseContext.getStatus();
-        LOGGER.info("<--- Response: Status " + status);
+    public void filter(ContainerRequestContext requestContext, 
+                      ContainerResponseContext responseContext) throws IOException {
+        LOGGER.info("--- Outgoing Response ---");
+        LOGGER.info("Status: " + responseContext.getStatus());
     }
 }
