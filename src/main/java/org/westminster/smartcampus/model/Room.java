@@ -11,6 +11,7 @@ public class Room {
     private String name;
     private int capacity;
     private List<String> sensorIds = new ArrayList<>();
+    private Map<String, String> links = new java.util.LinkedHashMap<>();
 
     public Room() {}
 
@@ -32,4 +33,7 @@ public class Room {
 
     public List<String> getSensorIds() { return sensorIds; }
     public void setSensorIds(List<String> sensorIds) { this.sensorIds = sensorIds; }
+
+    public Map<String, String> getLinks() { return links; }
+    public void setLinks(Map<String, String> links) { this.links = links; }
 }

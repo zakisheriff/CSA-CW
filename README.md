@@ -68,38 +68,73 @@ curl -X GET http://localhost:8080/api/v1/sensors/CO2-001/readings
 
 ## 📝 Conceptual Report (Reflection Answers)
 
+## 📝 Conceptual Report (Reflection Answers)
+
 ### Part 1: Service Architecture & Setup
 **Q: Explain the default lifecycle of a JAX-RS Resource class.**
-JAX-RS resources are **Request-Scoped** by default. A new instance of the resource class is instantiated for every incoming HTTP request and destroyed after the response is sent. This ensures thread isolation at the resource level but requires that any shared state (like our in-memory data) must be managed in a thread-safe way, such as using singletons or static variables protected by `ConcurrentHashMap` or synchronization blocks to avoid race conditions.
+By default, JAX-RS resources are **Request-Scoped (Stateless)**. The JAX-RS runtime (e.g., Jersey) instantiates a new instance of the resource class for every incoming HTTP request and discards it after the response is sent. 
+*   **Architectural Impact:** This ensures total thread isolation at the resource level, preventing request leakage. However, it means the API cannot rely on instance variables for state.
+*   **Synchronization Strategy:** In our "Smart Campus" system, shared data is delegated to a singleton `InventoryService`. To prevent race conditions and data corruption during concurrent requests (e.g., two sensors posting readings simultaneously), we utilize thread-safe structures like `ConcurrentHashMap` and explicit `synchronized` blocks on shared objects.
+
+**Q: Why is Hypermedia (HATEOAS) a hallmark of advanced RESTful design?**
+HATEOAS (Hypermedia as the Engine of Application State) decouples the client from the server's URI structure. 
+*   **Benefit:** Instead of the client hardcoding URLs (which creates a fragile system), the server provides dynamic links (hypermedia) in the JSON response.
+*   **Advantage:** This allows the API to evolve (e.g., changing `/rooms` to `/campus/rooms`) without breaking compliant clients. Our `DiscoveryResource` demonstrates this by providing a single entry point from which all other resources can be navigated.
 
 ### Part 2: Room Management
-**Q: What are the implications of returning only IDs versus returning the full room objects?**
-Returning only IDs reduces **network bandwidth** and improves performance for large collections. However, it requires the client to make follow-up requests to fetch details, increasing latency. For the Smart Campus, the list view returns full objects for convenience since the payload is small, while the "Discovery" map uses relative paths to point to full resource collections.
+**Q: What are the implications of returning only IDs versus returning full objects?**
+*   **Returning IDs only:** Optimizes network bandwidth and reduces serialization overhead, which is critical for low-power IoT mobile clients. However, it creates the "N+1 Problem," where a client must make multiple follow-up requests to get any meaningful data, increasing total latency.
+*   **Returning Full Objects:** Provides immediate context at the cost of larger payloads. In this API, we return full objects for specific fetches to reduce client-side complexity, while providing a filtered list view to balance performance.
 
 **Q: Is the DELETE operation idempotent?**
-Yes. DELETE is idempotent because the final state of the server is the same (room gone) regardless of whether the request is sent once or multiple times. While the first call returns `204 No Content`, subsequent calls to a deleted resource return `404 Not Found`, which is semantically correct for an idempotent operation as the *resource state* remains unchanged.
+Yes. An operation is idempotent if multiple identical requests have the same effect on the server state.
+*   **Scenario:** If a client sends `DELETE /rooms/LIB-301` twice:
+    1.  The first call deletes the room and returns `204 No Content`.
+    2.  The second call finds the room already gone and returns `404 Not Found`.
+*   **Justification:** While the *response code* changes, the *state of the server* (the room being absent) is identical after both calls. Therefore, DELETE is idempotent.
 
 ### Part 3: Sensor Operations & Linking
-**Q: Explain the consequences of Content-Type mismatches.**
-If a client sends `text/plain` instead of `application/json` to a method annotated with `@Consumes(MediaType.APPLICATION_JSON)`, JAX-RS will reject the request with an **HTTP 415 Unsupported Media Type** error. This is handled by the `MessageBodyReader` which ensures the payload can be safely deserialized into the expected Java POJO.
+**Q: Contrast Query Parameters vs. URL Paths for filtering.**
+*   **Path Parameters (`/sensors/type/CO2`):** Implies the filter is a resource hierarchy. This is less flexible because it suggests a static structure.
+*   **Query Parameters (`/sensors?type=CO2`):** Correctly models the request as a query over a collection. 
+*   **Superiority:** Query parameters allow for complex multi-criteria filtering (e.g., `?type=CO2&status=ACTIVE`) which would be architecturally messy and ambiguous to represent in a URL path.
 
-### Part 4: Deep Nesting with Sub-Resources
-**Q: Discuss the architectural benefits of the Sub-Resource Locator pattern.**
-Delegating logic to separate resource classes (like `SensorReadingResource`) managed via a locator (`/{sensorId}/readings`) helps manage complexity. It avoids "God classes" that try to handle all nested paths, improves code readability, and allows for cleaner lifecycle management and dependency injection specific to the nested context.
+### Part 4: Sub-Resources
+**Q: Discuss the benefits of the Sub-Resource Locator pattern.**
+Delegating logic to a `SensorReadingResource` via a locator (`/{sensorId}/readings`) enforces **Separation of Concerns**.
+*   **Avoids "God Classes":** It prevents the `SensorResource` from becoming a massive, unmaintainable controller.
+*   **Contextual Logic:** It allows the nested resource to focus purely on "Readings" while inheriting the "Sensor context" from the locator. This makes the codebase modular and enables cleaner dependency injection for complex sub-trees.
 
 ### Part 5: Advanced Error Handling & Observability
-**Q: Why is HTTP 422 semantically more accurate than 404 for missing references?**
-HTTP **422 Unprocessable Entity** is strictly for cases where the syntax is correct (valid JSON) but the instruction is semantically invalid (referencing a non-existent room ID). A **404** implies the *endpoint* doesn't exist, which could confuse developers into thinking the URL path is wrong rather than the data payload.
+**Q: Why is HTTP 422 more accurate than 404 for missing references?**
+A **404 Not Found** suggests that the *resource endpoint itself* (the URL) is incorrect. In contrast, **422 Unprocessable Entity** signifies that the server understands the request syntax (valid JSON) but cannot process the instructions because they are semantically invalid (e.g., referencing a room ID that doesn't exist). This distinction is critical for debugging, as it tells the developer that their code is correct, but their data is out of sync.
 
 **Q: Risks of exposing Java stack traces?**
-Stack traces reveal internal implementation details like file paths, library versions (`Jersey`, `Grizzly`), and database schemas. An attacker can use this information to identify known vulnerabilities in specific library versions or gain insights into the system's logic to craft targeted exploits (exploiting "leak-prone" logic).
+Stack traces are a "gold mine" for attackers. They reveal:
+1.  **Software Versions:** Enabling attackers to look up known CVEs for specific Jersey or Grizzly versions.
+2.  **Internal Paths:** Exposing the server's directory structure.
+3.  **Code Logic:** Hints about the underlying algorithms which can be exploited for "Insecure Direct Object Reference" (IDOR) attacks.
+Our API uses a **Global Safety Net (500 Mapper)** to intercept all throwables and return a generic, secure message.
+
+---
+
+## 🏛️ Design Patterns & Architectural Decisions
+
+To ensure a first-class, scalable system, several key architectural patterns were implemented:
+
+1.  **Singleton Pattern (`InventoryService`):** Ensures a single, centralized source of truth for in-memory data, preventing synchronization issues across multiple resource instances.
+2.  **Sub-Resource Locator Pattern (`SensorResource`):** Delegates nested URI logic to specialized classes, reducing complexity and enforcing a strict resource hierarchy.
+3.  **Data Transfer Object (DTO) / POJO Pattern:** Core entities are cleanly encapsulated, ensuring that the API layer is decoupled from any future persistence logic.
+4.  **Observer-like Side Effects:** When a `SensorReading` is posted, the system automatically triggers an update to the parent `Sensor` object, ensuring data consistency across the entire API graph.
+5.  **Chain of Responsibility (Filters):** Custom JAX-RS filters handle cross-cutting concerns (logging, authentication-readiness) without polluting individual business logic methods.
+6.  **Strategy Pattern (Exception Mappers):** Separate mappers for each exception type allow the system to choose the correct HTTP response strategy based on the specific business failure.
 
 ---
 
 ## 📁 Project Structure
 - `src/main/java/org/westminster/smartcampus/`
-    - `model/`: Data POJOs
-    - `resource/`: API Endpoints & Sub-resources
-    - `service/`: Singleton In-Memory Data Manager
-    - `exception/`: Custom Exceptions & mappers (403, 409, 422, 500)
-    - `filter/`: Observability logging filters
+    - `model/`: Data POJOs with HATEOAS link support.
+    - `resource/`: REST Endpoints using Sub-resource locators.
+    - `service/`: Singleton Inventory Manager & Validation Logic.
+    - `exception/`: Dedicated architectural Mappers (403, 409, 422, 500).
+    - `filter/`: Observability logging filters (Request/Response).

@@ -28,7 +28,10 @@ public class SensorResource {
 
     @POST
     public Response createSensor(Sensor sensor) {
-        // Validate Room exists
+        // Professional validation layer for POJO integrity
+        org.westminster.smartcampus.service.ValidationService.validateSensor(sensor);
+
+        // Dependency Validation (422 check)
         if (inventory.getRoom(sensor.getRoomId()) == null) {
             throw new LinkedResourceNotFoundException("Room " + sensor.getRoomId() + " does not exist.");
         }
@@ -39,19 +42,29 @@ public class SensorResource {
 
     @GET
     @Path("/{sensorId}")
-    public Response getSensor(@PathParam("sensorId") String sensorId) {
+    public Response getSensor(@PathParam("sensorId") String sensorId, @Context UriInfo uriInfo) {
         Sensor sensor = inventory.getSensor(sensorId);
         if (sensor == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
+
+        // HATEOAS: Populate dynamic links
+        sensor.getLinks().put("self", uriInfo.getAbsolutePath().toString());
+        sensor.getLinks().put("readings", uriInfo.getAbsolutePathBuilder().path("readings").build().toString());
+
         return Response.ok(sensor).build();
     }
 
     /**
      * Sub-resource locator for readings.
+     * Effectively delegates responsibility for the /readings sub-path to SensorReadingResource.
      */
     @Path("/{sensorId}/readings")
     public SensorReadingResource getReadingResource(@PathParam("sensorId") String sensorId) {
+        // Validate Sensor existence before delegating to preserve resource integrity
+        if (inventory.getSensor(sensorId) == null) {
+            throw new WebApplicationException("Sensor not found", Response.Status.NOT_FOUND);
+        }
         return new SensorReadingResource(sensorId);
     }
 }

@@ -26,9 +26,9 @@ public class RoomResource {
 
     @POST
     public Response createRoom(Room room, @Context UriInfo uriInfo) {
-        if (room.getId() == null || room.getId().isEmpty()) {
-            return Response.status(Response.Status.BAD_REQUEST).entity("Room ID is required").build();
-        }
+        // Professional validation layer
+        org.westminster.smartcampus.service.ValidationService.validateRoom(room);
+        
         inventory.addRoom(room);
         
         // 201 Created with Location header
@@ -38,11 +38,16 @@ public class RoomResource {
 
     @GET
     @Path("/{roomId}")
-    public Response getRoom(@PathParam("roomId") String roomId) {
+    public Response getRoom(@PathParam("roomId") String roomId, @Context UriInfo uriInfo) {
         Room room = inventory.getRoom(roomId);
         if (room == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
+        
+        // HATEOAS: Populate dynamic self-link
+        room.getLinks().put("self", uriInfo.getAbsolutePath().toString());
+        room.getLinks().put("sensors", uriInfo.getAbsolutePathBuilder().path("sensors").build().toString());
+        
         return Response.ok(room).build();
     }
 

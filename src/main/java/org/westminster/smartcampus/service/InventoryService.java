@@ -86,9 +86,12 @@ public class InventoryService {
                 .add(reading);
         
         // Side Effect: Update parent sensor's currentValue
+        // Guaranteed update via synchronized block to prevent race conditions during concurrent readings
         Sensor sensor = sensors.get(sensorId);
         if (sensor != null) {
-            sensor.setCurrentValue(reading.getValue());
+            synchronized (sensor) {
+                sensor.setCurrentValue(reading.getValue());
+            }
         }
     }
 

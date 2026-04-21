@@ -9,6 +9,7 @@ public class Sensor {
     private String status;
     private double currentValue;
     private String roomId;
+    private java.util.Map<String, String> links = new java.util.LinkedHashMap<>();
 
     public Sensor() {}
 
@@ -35,4 +36,7 @@ public class Sensor {
 
     public String getRoomId() { return roomId; }
     public void setRoomId(String roomId) { this.roomId = roomId; }
+
+    public java.util.Map<String, String> getLinks() { return links; }
+    public void setLinks(java.util.Map<String, String> links) { this.links = links; }
 }
